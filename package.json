@@ -1,0 +1,26 @@
+{
+  "name": "work-hours",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nalesevic/work-hours.git"
+  },
+  "author": "Nizam",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nalesevic/work-hours/issues"
+  },
+  "homepage": "https://github.com/nalesevic/work-hours#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mongojs": "^3.1.0",
+    "nodemon": "^1.19.4"
+  }
+}
