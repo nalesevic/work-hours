@@ -13,6 +13,8 @@ $(document).ready(function() {
     onCreate: function() {
       window.localStorage.removeItem("token");
       localStorage.removeItem("prevSkip");
+      localStorage.removeItem("start");
+      localStorage.removeItem("end");
       window.location.href = "index.html";
     },
   });

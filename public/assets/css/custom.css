@@ -37,6 +37,7 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
   margin-top: 100px;
+  margin-left: 15%;
   width: 80%;
 }
 .title p{
@@ -65,18 +66,19 @@ q:before, q:after {
   content: none;
 }
 
+.paging{
+  text-align: center;
+}
+
 html { line-height: 1.5; font-family: sans-serif; font-weight: normal; color: rgba(0,0,0,0.87); }
 body { margin:0; }
 
-nav { height:50px; line-height:50px; background:#00acc1; position:fixed; top:0; left:0; width:100%; }
+nav { height:50px; line-height:50px; background:#00acc1; position:fixed; top:0; left:0; width:100%; z-index: 100; }
 nav ul li { display:block; float:left; width:100px; text-align:center; margin-left: 50px; font-size: larger; font-weight: bolder;}
 nav ul li a { color:#fff; text-decoration:none; }
 nav ul li a:hover { color: lavender; text-decoration:none; }
 
-
-main#spapp > section { padding:130px 10px 10px 10px; }  
-main#spapp > section#login {}
-main#spapp > section#dashboard {} 
+main#spapp > section { padding:80px 10px 10px 10px; }  
 main#spapp > section#error_404 { background:#b71c1c; color:#fff; }
 main#spapp h1 { font-size: 4.2rem; line-height: 110%; margin: 2.1rem 0 1.68rem 0; text-align:center; }
 

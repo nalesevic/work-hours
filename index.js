@@ -1,12 +1,16 @@
 const express = require('express');
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 3000;
 const bodyParser = require('body-parser');
 const mongojs = require('mongojs');
-const config = require('./config.js');
-const db = mongojs(config.MONGODB_URL);
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
+let config;
+if (port == 3000) {
+    config = require('./config.js');
+}
+const db = mongojs(process.env.MONGODB_URL || config.MONGODB_URL);
 
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
@@ -25,7 +29,7 @@ app.use("/user", userRouter);
 
 app.post('/register', (req, res) => {    
     let password = req.body.password;
-    bcrypt.hash(password, config.SALT, (err, hash) => {
+    bcrypt.hash(password, config.SALT || process.env.SALT, (err, hash) => {
         let data = req.body;
         data.password = hash;
         db.user.insert(data, (error, doc) => {
@@ -53,7 +57,7 @@ app.post('/login', (req, res) => {
                     let jwtToken = jwt.sign({
                         id: doc._id,
                         exp: (Math.floor(Date.now() / 1000) + 3600), // token which lasts for an hour
-                    }, config.JWT_SECRET);
+                    }, config.JWT_SECRET || process.env.JWT_SECRET);
                     res.setHeader("Authorization", jwtToken);
                     res.status(200).send(jwtToken);
                 } else {

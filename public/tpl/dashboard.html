@@ -16,6 +16,10 @@
         <form id="hour_form" method="POST" action="" onsubmit="addHour();return false">
           <div class="modal-body">
             <div class="form-group">
+                  <label>Date</label>
+                  <input name="createdAt" id="createdAt" type="date" class="form-control">
+                </div>
+            <div class="form-group">
               <label>Number Of Hours</label>
               <input name="numHours" id="numHours" type="number" class="form-control">
             </div>
@@ -26,7 +30,7 @@
             <p id="error"></p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button id="closeAddModal" name="closeAddModal" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary">Add</button>
           </div>
         </form>
@@ -47,7 +51,7 @@
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">
-        <form id="interval_form" method="POST" action="" onsubmit="getHoursInterval();return false">
+        <form id="interval_form" method="POST" action="" onsubmit="interval();return false">
           <div class="modal-body">
             <div class="form-group">
               <label>Date from</label>
@@ -60,7 +64,7 @@
             <p id="error"></p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button id="closeIntervalModal" name="closeIntervalModal" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary">Search</button>
           </div>
         </form>
@@ -68,8 +72,8 @@
     </div>
   </div>
 </div>
-
-<table class="table table table-hover ">
+<button type="button" class="btn btn-default" onclick="removeInterval()">Remove Interval</button>
+<table class="table table table-hover" style="width: 70%;">
   <thead >
     <tr>
       <th scope="col">Date <button class="btn glyphicon glyphicon-sort" onclick="sort()"></button></th>
@@ -84,20 +88,26 @@
 
 <p id="info"></p>
 
-<button id="btnPreviousPage" class="btn btn-default" onclick="getHours(1)" >Previous Page</button>
-<button id = "btnNextPage" class="btn btn-default" onclick="getHours(2)" >Next Page</button>
-
+<div class="paging">
+  <button type="button" id="btnPreviousPage" class="btn btn-default" onclick="getHours(1)" >Previous Page</button>
+  <button type="button" id = "btnNextPage" class="btn btn-primary" onclick="getHours(2)" >Next Page</button>
+</div>
+<br><br><br>
 <script>
-  let limit = 2;
+  let limit = 10;
+  let skip = 0;
+  
   // page first loaded
   getHours(0);
   // page reloaded
   if (performance.navigation.type == 1) {
     localStorage.removeItem("prevSkip");
+    localStorage.removeItem("start");
+    localStorage.removeItem("end");
     document.getElementById("btnPreviousPage").disabled = false; 
     document.getElementById("btnPreviousPage").disabled = false; 
   }
-
+  
   function getHours(direction) {
     if(!localStorage["prevSkip"]) {
       //first time
@@ -108,13 +118,13 @@
     } else {
       if(direction == 1) {
         let ps = Number(localStorage.getItem("prevSkip"));
-        skip = ps - 2;
+        skip = ps - 10;
         localStorage.setItem("prevSkip", skip);
       } else {
         document.getElementById("btnPreviousPage").disabled = false; 
         document.getElementById("btnPreviousPage").disabled = false; 
         let ps = Number(localStorage.getItem("prevSkip"));
-        skip = ps + 2;
+        skip = ps + 10;
         localStorage.setItem("prevSkip", skip);
         console.log("Dolje");
       }
@@ -124,9 +134,17 @@
         document.getElementById("btnPreviousPage").disabled = true;
       }
     }
+  
+    let url = '/user/hours/?limit=' + limit + "&skip=" + skip + '&sort=' + localStorage.getItem("sort");
+
+    if(localStorage.getItem("start") && localStorage.getItem("end")) {
+      start = localStorage.getItem("start");
+      end = localStorage.getItem("end");
+      url = '/user/hours/?limit=' + limit + "&skip=" + skip + '&sort=' + localStorage.getItem("sort") + '&start=' + start + "&end=" + end;
+    } 
     
     $.ajax({
-        url: '/user/hours/?limit=' + limit + "&skip=" + skip + '&sort=' + localStorage.getItem("sort"),
+        url: url,
         method: 'GET',
         beforeSend: function(xhr) {
             xhr.setRequestHeader("Authorization",
@@ -144,7 +162,7 @@
                 let id = data[i]._id;
                 let dt = new Date(data[i].createdAt * 1000).toString();
                 html += '<tr><td width=250>'+dt.substring(4, 15)+'</td>';
-                html += '<td>'+data[i].numHours+'</td>';
+                html += '<td style="padding-left:90px;">'+data[i].numHours+'</td>';
                 html += '<td>'+data[i].description+'</td>';
                 html += "<td><button id='button' type='button' class='btn btn-danger' onclick='removeHour(\""+ id + "\")'>Delete</button></td></tr>";
             }
@@ -157,33 +175,7 @@
         }
     })
   }
-  function getHoursInterval(start, end) {
-    $.ajax({
-        url: '/user/hours/interval',
-        method: 'POST',
-        data: $("#interval_form").serialize(),
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader("Authorization",
-            window.localStorage.getItem("token"));
-        },
-        success: function(data) {
-          let html = '';
-          for(let i = 0; i < data.length; i ++) {
-              let id = data[i]._id;
-              let dt = new Date(data[i].createdAt * 1000).toString();
-              html += '<tr><td width=250>'+dt.substring(4, 15)+'</td>';
-              html += '<td>'+data[i].numHours+'</td>';
-              html += '<td>'+data[i].description+'</td>';
-              html += "<td><button id='button' type='button' class='btn btn-danger' onclick='removeHour(\""+ id + "\")'>Delete</button></td></tr>";
-          }
-          $('#hours_body').html(html);
-          $('#info').html("");
-        },
-        error: function(error) {
-        console.log("Error occured while fetching hours");
-        }
-    })
-  }
+  
   function addHour() {
         $.ajax({
             url: '/user/hours',
@@ -194,13 +186,15 @@
                 window.localStorage.getItem("token"));
             },
             success: function(data) {
-                location.reload();
+              document.getElementById("closeAddModal").click();
+              getHours();
             },
             error: function(error) {
                 console.log("Cannot post hour");
             }
         })
     }
+  
   function removeHour(id) {
       if (confirm("Delete selected day ?")) {
         $.ajax({
@@ -220,6 +214,7 @@
         })
       }
     }
+  
   function sort() {
     if(!localStorage["sort"] || localStorage["sort"] == -1) {
       //first time
@@ -227,38 +222,24 @@
     } else {
       localStorage.setItem("sort", -1);
     }
-
-    $.ajax({
-        url: '/user/hours/?limit='+ limit +"&skip=" + skip + "&sort=" + localStorage.getItem("sort"),
-        method: 'GET',
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader("Authorization",
-            window.localStorage.getItem("token"));
-        },
-        success: function(data) {
-          if(data.length == 0) {
-            $('#hours_body').html("");
-            document.getElementById("btnNextPage").disabled = true; 
-            $('#info').html("END OF DOCUMENT");
-          } else {
-            document.getElementById("btnNextPage").disabled = false; 
-            let html = '';
-            for(let i = 0; i < data.length; i ++) {
-                let id = data[i]._id;
-                let dt = new Date(data[i].createdAt * 1000).toString();
-                html += '<tr><td width=250>'+dt.substring(4, 15)+'</td>';
-                html += '<td>'+data[i].numHours+'</td>';
-                html += '<td>'+data[i].description+'</td>';
-                html += "<td><button id='button' type='button' class='btn btn-danger' onclick='removeHour(\""+ id + "\")'>Delete</button></td></tr>";
-            }
-            $('#hours_body').html(html);
-            $('#info').html("");
-          }
-        },
-        error: function(error) {
-            console.log("Error occured while fetching hours");
-        }
-    })
-
+    localStorage.setItem("prevSkip", -10);
+    getHours();
   }
+
+  function interval() {
+    let startDate = document.getElementById('start').value;
+    let endDate = document.getElementById('end').value;
+    localStorage.setItem("start", startDate);
+    localStorage.setItem("end", endDate);
+    localStorage.setItem("prevSkip", -10);
+    document.getElementById("closeIntervalModal").click();
+    getHours();    
+  }
+
+  function removeInterval() {
+    localStorage.removeItem("start");
+    localStorage.removeItem("end");
+    getHours();
+  }
+
 </script>
