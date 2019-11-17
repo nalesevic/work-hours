@@ -6,8 +6,10 @@ const mongojs = require('mongojs');
 const config = require('./config.js');
 const db = mongojs(config.MONGODB_URL);
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-app.use(bodyParser.json());
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use('/', express.static('public'));
 
 app.get('/users', (req, res) => {
@@ -16,17 +18,28 @@ app.get('/users', (req, res) => {
     })
 });
 
-app.post('/registration', (req, res) => {
+// Express Routers
+let userRouter = express.Router();
+require("./routes/user.js")(userRouter, db, mongojs, config, jwt);
+app.use("/user", userRouter);
+
+app.post('/register', (req, res) => {    
     let password = req.body.password;
     bcrypt.hash(password, config.SALT, (err, hash) => {
-        req.body.password = hash;
-    })
-    db.user.insert(req.body, (error, doc) => {
-        res.send(doc);
+        let data = req.body;
+        data.password = hash;
+        db.user.insert(data, (error, doc) => {
+            if(error) {
+                doc.json("ERROR");
+            } else {
+                res.redirect('/');
+            }
+        })
     })
 });
 
 app.post('/login', (req, res) => {
+    
     let email = req.body.email;
     let password = req.body.password;
     
@@ -36,37 +49,20 @@ app.post('/login', (req, res) => {
         } else {
             let hash = doc.password;
             bcrypt.compare(password, hash, (err, success) => {
-                if(success) {
-                    res.redirect('http://localhost:5000/#my');
+                if(success == true) {
+                    let jwtToken = jwt.sign({
+                        id: doc._id,
+                        exp: (Math.floor(Date.now() / 1000) + 3600), // token which lasts for an hour
+                    }, config.JWT_SECRET);
+                    res.setHeader("Authorization", jwtToken);
+                    res.status(200).send(jwtToken);
                 } else {
-                    res.json(err);
+                    res.status(404).send("Wrong email or password");
                 }
             })
         }
     })
     
-});
-
-app.get('/hours/:id', (req, res) => {
-    let userId = req.params.id;
-    db.hour.find({ userId: mongojs.ObjectID(userId) }, (error, docs) => {
-        res.json(docs);
-    })
-});
-
-app.post('/hours', (req, res) => {
-    let userId = req.body.userId;
-    req.body.userId = mongojs.ObjectID(userId);
-    db.hour.insert(req.body, (error, doc) => {
-        res.json(doc);
-    });
-});
-
-app.delete('/hours/:id', (req, res) => {
-    let id = req.params.id;
-    db.hour.remove({ _id: mongojs.ObjectID(id) }, (error, docs) => {
-        res.json(docs);
-    })
 });
 
 app.listen(port, () => console.log('Listening on port ' + port));
