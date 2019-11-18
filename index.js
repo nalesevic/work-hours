@@ -56,7 +56,7 @@ app.post('/login', (req, res) => {
                 if(success == true) {
                     let jwtToken = jwt.sign({
                         id: doc._id,
-                        exp: (Math.floor(Date.now() / 1000) + 3600), // token which lasts for an hour
+                        exp: (Math.floor(Date.now() / 1000) + 3600) // token which lasts for an hour
                     }, config.JWT_SECRET || process.env.JWT_SECRET);
                     res.setHeader("Authorization", jwtToken);
                     res.status(200).send(jwtToken);
