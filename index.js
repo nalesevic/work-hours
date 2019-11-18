@@ -1,13 +1,13 @@
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 const bodyParser = require('body-parser');
 const mongojs = require('mongojs');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 let config;
-if (port == 3000) {
+if (port == 5000) {
     config = require('./config.js');
 }
 const db = mongojs(process.env.MONGODB_URL || config.MONGODB_URL);
@@ -61,7 +61,7 @@ app.post('/login', (req, res) => {
                     res.setHeader("Authorization", jwtToken);
                     res.status(200).send(jwtToken);
                 } else {
-                    res.status(404).send("Wrong email or password");
+                    res.status(401).send("Wrong email or password");
                 }
             })
         }
