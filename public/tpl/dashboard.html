@@ -1,7 +1,7 @@
 <div class="title">
-    <p>My Working Hours</p>
+  <p>My Working Hours</p>
 </div>
-<button id="add_hour" type="button" class="btn btn-info" data-toggle="modal" data-target="#addHour">Add Hour</button>
+<button id="add_hour" type="button" class="btn btn-info" data-toggle="modal" data-target="#addHour">New Day</button>
 <!-- Modal -->
 <div id="addHour" class="modal fade" role="dialog">
   <div class="modal-dialog">
@@ -16,9 +16,9 @@
         <form id="hour_form" method="POST" action="" onsubmit="addHour();return false">
           <div class="modal-body">
             <div class="form-group">
-                  <label>Date</label>
-                  <input name="createdAt" id="createdAt" type="date" class="form-control">
-                </div>
+              <label>Date</label>
+              <input name="createdAt" id="createdAt" type="date" class="form-control">
+            </div>
             <div class="form-group">
               <label>Number Of Hours</label>
               <input name="numHours" id="numHours" type="number" class="form-control">
@@ -30,7 +30,8 @@
             <p id="error"></p>
           </div>
           <div class="modal-footer">
-            <button id="closeAddModal" name="closeAddModal" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button id="closeAddModal" name="closeAddModal" type="button" class="btn btn-secondary"
+              data-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary">Add</button>
           </div>
         </form>
@@ -39,7 +40,8 @@
   </div>
 </div>
 
-<button id="set_interval" type="button" class="btn btn-secondary" data-toggle="modal" data-target="#setInterval">Set interval</button>
+<button id="set_interval" type="button" class="btn btn-secondary" data-toggle="modal" data-target="#setInterval">Date
+  Interval</button>
 <!-- Modal -->
 <div id="setInterval" class="modal fade" role="dialog">
   <div class="modal-dialog">
@@ -47,7 +49,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <i class='far fa-address-card' style='font-size:36px'></i>
-        <h4 class="modal-title" style="padding-left:10px;">Set Working interval</h4>
+        <h4 class="modal-title" style="padding-left:10px;">Set Date Interval</h4>
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">
@@ -64,7 +66,8 @@
             <p id="error"></p>
           </div>
           <div class="modal-footer">
-            <button id="closeIntervalModal" name="closeIntervalModal" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button id="closeIntervalModal" name="closeIntervalModal" type="button" class="btn btn-secondary"
+              data-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-primary">Search</button>
           </div>
         </form>
@@ -74,7 +77,7 @@
 </div>
 <button type="button" class="btn btn-default" onclick="removeInterval()">Remove Interval</button>
 <table class="table table table-hover" style="width: 70%;">
-  <thead >
+  <thead>
     <tr>
       <th scope="col">Date <button class="btn glyphicon glyphicon-sort" onclick="sort()"></button></th>
       <th scope="col">Working Hours</th>
@@ -89,134 +92,136 @@
 <p id="info"></p>
 
 <div class="paging">
-  <button type="button" id="btnPreviousPage" class="btn btn-default" onclick="getHours(1)" >Previous Page</button>
-  <button type="button" id = "btnNextPage" class="btn btn-primary" onclick="getHours(2)" >Next Page</button>
+  <button type="button" id="btnPreviousPage" class="btn btn-default" onclick="getHours(1)">Previous Page</button>
+  <button type="button" id="btnNextPage" class="btn btn-primary" onclick="getHours(2)">Next Page</button>
 </div>
 <br><br><br>
 <script>
   let limit = 10;
   let skip = 0;
-  
+
   // page first loaded
   getHours(0);
   // page reloaded
   if (performance.navigation.type == 1) {
-    localStorage.removeItem("prevSkip");
+    localStorage.setItem("prevSkip", -10);
     localStorage.removeItem("start");
     localStorage.removeItem("end");
-    document.getElementById("btnPreviousPage").disabled = false; 
-    document.getElementById("btnPreviousPage").disabled = false; 
+    document.getElementById("btnPreviousPage").disabled = false;
+    document.getElementById("btnPreviousPage").disabled = false;
   }
-  
+
   function getHours(direction) {
-    if(!localStorage["prevSkip"]) {
+    if (!localStorage["prevSkip"]) {
       //first time
       skip = 0;
       localStorage.setItem("prevSkip", skip);
       console.log("Gore");
-    
+
     } else {
-      if(direction == 1) {
+      if (direction == 1) {
         let ps = Number(localStorage.getItem("prevSkip"));
         skip = ps - 10;
         localStorage.setItem("prevSkip", skip);
       } else {
-        document.getElementById("btnPreviousPage").disabled = false; 
-        document.getElementById("btnPreviousPage").disabled = false; 
+        document.getElementById("btnPreviousPage").disabled = false;
+        document.getElementById("btnPreviousPage").disabled = false;
         let ps = Number(localStorage.getItem("prevSkip"));
         skip = ps + 10;
         localStorage.setItem("prevSkip", skip);
         console.log("Dolje");
       }
-      if(skip < 0) {
+      if (skip < 0) {
         skip = 0;
         localStorage.setItem("prevSkip", skip);
         document.getElementById("btnPreviousPage").disabled = true;
       }
     }
-  
+
     let url = '/user/hours/?limit=' + limit + "&skip=" + skip + '&sort=' + localStorage.getItem("sort");
 
-    if(localStorage.getItem("start") && localStorage.getItem("end")) {
+    if (localStorage.getItem("start") && localStorage.getItem("end")) {
       start = localStorage.getItem("start");
       end = localStorage.getItem("end");
       url = '/user/hours/?limit=' + limit + "&skip=" + skip + '&sort=' + localStorage.getItem("sort") + '&start=' + start + "&end=" + end;
-    } 
-    
+    }
+
     $.ajax({
-        url: url,
-        method: 'GET',
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader("Authorization",
-            window.localStorage.getItem("token"));
-        },
-        success: function(data) {
-          if(data.length == 0) {
-            $('#hours_body').html("");
-            document.getElementById("btnNextPage").disabled = true; 
-            $('#info').html("END OF DOCUMENT");
-          } else {
-            document.getElementById("btnNextPage").disabled = false; 
-            let html = '';
-            for(let i = 0; i < data.length; i ++) {
-                let id = data[i]._id;
-                let dt = new Date(data[i].createdAt * 1000).toString();
-                html += '<tr><td width=250>'+dt.substring(4, 15)+'</td>';
-                html += '<td style="padding-left:90px;">'+data[i].numHours+'</td>';
-                html += '<td>'+data[i].description+'</td>';
-                html += "<td><button id='button' type='button' class='btn btn-danger' onclick='removeHour(\""+ id + "\")'>Delete</button></td></tr>";
-            }
-            $('#hours_body').html(html);
-            $('#info').html("");
+      url: url,
+      method: 'GET',
+      beforeSend: function (xhr) {
+        xhr.setRequestHeader("Authorization",
+          window.localStorage.getItem("token"));
+      },
+      success: function (data) {
+        if (data.length == 0) {
+          $('#hours_body').html("");
+          document.getElementById("btnNextPage").disabled = true;
+          $('#info').html("END OF DOCUMENT");
+        } else {
+          document.getElementById("btnNextPage").disabled = false;
+          let html = '';
+          for (let i = 0; i < data.length; i++) {
+            let id = data[i]._id;
+            let dt = new Date(data[i].createdAt * 1000).toString();
+            html += '<tr><td width=250>' + dt.substring(4, 15) + '</td>';
+            html += '<td style="padding-left:90px;">' + data[i].numHours + '</td>';
+            html += '<td>' + data[i].description + '</td>';
+            html += "<td><button id='button' type='button' class='btn btn-danger' onclick='removeHour(\"" + id + "\")'>Delete</button></td></tr>";
           }
-        },
-        error: function(error) {
-            console.log("Error occured while fetching hours");
+          $('#hours_body').html(html);
+          $('#info').html("");
         }
+      },
+      error: function (error) {
+        console.log("Error occured while fetching hours");
+      }
     })
   }
-  
+
   function addHour() {
-        $.ajax({
-            url: '/user/hours',
-            method: 'POST',
-            data: $("#hour_form").serialize(),
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader("Authorization",
-                window.localStorage.getItem("token"));
-            },
-            success: function(data) {
-              document.getElementById("closeAddModal").click();
-              getHours();
-            },
-            error: function(error) {
-                console.log("Cannot post hour");
-            }
-        })
-    }
-  
-  function removeHour(id) {
-      if (confirm("Delete selected day ?")) {
-        $.ajax({
-          url: '/user/hours/' + id,
-          method: 'delete',
-          beforeSend: function (xhr) {
-            xhr.setRequestHeader("Authorization",
-              window.localStorage.getItem("token"));
-          },
-          success: function (data) {
-            console.log("Vratio sam se fino");
-            location.reload();
-          },
-          error: function (error) {
-            alert("Cannot delete hour with id " + id);
-          }
-        })
+    $.ajax({
+      url: '/user/hours',
+      method: 'POST',
+      data: $("#hour_form").serialize(),
+      beforeSend: function (xhr) {
+        xhr.setRequestHeader("Authorization",
+          window.localStorage.getItem("token"));
+      },
+      success: function (data) {
+        document.getElementById("closeAddModal").click();
+        localStorage.setItem("prevSkip", -10);
+        getHours();
+      },
+      error: function (error) {
+        console.log("Cannot post hour");
       }
+    })
+  }
+
+  function removeHour(id) {
+    if (confirm("Delete selected day ?")) {
+      $.ajax({
+        url: '/user/hours/' + id,
+        method: 'delete',
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("Authorization",
+            window.localStorage.getItem("token"));
+        },
+        success: function (data) {
+          console.log("Vratio sam se fino");
+          localStorage.setItem("prevSkip", -10);
+          getHours();
+        },
+        error: function (error) {
+          alert("Cannot delete hour with id " + id);
+        }
+      })
     }
-  
+  }
+
   function sort() {
-    if(!localStorage["sort"] || localStorage["sort"] == -1) {
+    if (!localStorage["sort"] || localStorage["sort"] == -1) {
       //first time
       localStorage.setItem("sort", 1);
     } else {
@@ -233,12 +238,13 @@
     localStorage.setItem("end", endDate);
     localStorage.setItem("prevSkip", -10);
     document.getElementById("closeIntervalModal").click();
-    getHours();    
+    getHours();
   }
 
   function removeInterval() {
     localStorage.removeItem("start");
     localStorage.removeItem("end");
+    localStorage.setItem("prevSkip", -10);
     getHours();
   }
 

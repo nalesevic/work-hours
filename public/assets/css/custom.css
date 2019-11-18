@@ -32,7 +32,7 @@ table th {
 table {
   border-collapse: collapse;
   border-spacing: 0;
-  margin-top: 100px;
+  margin-top: 20px;
   margin-left: 15%;
   width: 80%;
 }
@@ -44,8 +44,10 @@ table {
 }
 #add_hour{
   float: right;
-  width: 200px;
+  width: 100px;
+  height: 50px;
   font-weight: bolder;
+  margin-right: 100px;
 }
 #info {
   text-align: center;
@@ -64,6 +66,15 @@ q:before, q:after {
 
 .paging{
   text-align: center;
+}
+
+.login_card {
+  margin-left: 500px;
+  margin-top: 100px;
+}
+
+#set_interval {
+  margin-left: 100px;
 }
 
 html { line-height: 1.5; font-family: sans-serif; font-weight: normal; color: rgba(0,0,0,0.87); }

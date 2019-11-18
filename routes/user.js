@@ -3,7 +3,7 @@ module.exports = (router, db, mongojs, config, jwt) => {
     let decoded = "";
 
     router.use('/', (req, res, next) => {
-        
+
         console.log("User logged in from " + req.ip);
 
         let authorization = req.get('Authorization');
@@ -25,14 +25,14 @@ module.exports = (router, db, mongojs, config, jwt) => {
         let limit = Number(req.query.limit) || 5;
         let skip = Number(req.query.skip) || 0;
         let srt = Number(req.query.sort) || 1;
-        
+
         if (req.query.start != null && req.query.end != null) {
             let start = req.query.start;
             let end = req.query.end;
             let toTimestampStart = Date.parse(start) / 1000
             let toTimestampEnd = Date.parse(end) / 1000
             console.log(toTimestampStart);
-            
+
             db.hour.find({
                 $and: [
                     { userId: mongojs.ObjectID(decoded.id) },
@@ -41,11 +41,11 @@ module.exports = (router, db, mongojs, config, jwt) => {
                 ]
             }).sort({ createdAt: srt }).skip(skip).limit(limit, (error, docs) => {
                 console.log("OPA");
-                
+
                 if (error)
                     res.send("Error while fetching documents")
                 console.log(docs);
-                
+
                 res.json(docs);
 
             });
@@ -68,12 +68,12 @@ module.exports = (router, db, mongojs, config, jwt) => {
             req.body.userId = mongojs.ObjectID(decoded.id);
             let d = req.body.createdAt;
             req.body.createdAt = Date.parse(d) / 1000
-        
+
             db.hour.insert(req.body, (error, doc) => {
-                if(error) {
+                if (error) {
                     res.send("Error");
                 } else {
-                    db.hour.find({ userId: mongojs.ObjectID(decoded.userId)}).sort({ createdAt: -1 }, (error, docs) => {
+                    db.hour.find({ userId: mongojs.ObjectID(decoded.userId) }).sort({ createdAt: -1 }, (error, docs) => {
                         res.send(docs);
                     })
                 }
